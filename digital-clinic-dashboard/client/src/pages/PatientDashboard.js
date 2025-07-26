@@ -1,6 +1,6 @@
 // client/src/pages/PatientDashboard.js
 import React, { useState, useEffect } from 'react';
-import io from 'socket.io-client'; // NEW: Import socket.io-client
+import io from 'socket.io-client';
 
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 const SOCKET_SERVER_URL = API_BASE_URL; // Socket.IO server runs on the same URL as API
@@ -77,7 +77,7 @@ function PatientDashboard() {
     // State for "My Appointments" list
     const [myAppointments, setMyAppointments] = useState([]);
     const [patientError, setPatientError] = useState('');
-    // NEW: State for real-time notifications
+    // State for real-time notifications
     const [notification, setNotification] = useState(null);
 
     const getToken = () => localStorage.getItem('token');
@@ -88,8 +88,7 @@ function PatientDashboard() {
 
 
     // --- Fetch Patient Data (My Turn, My Appointments, Doctors for Booking) ---
-    // Moved function out to be callable from useEffect and event handlers
-    const fetchPatientData = async () => {
+    const fetchPatientData = async () => { // Moved function out to be callable
         setPatientError('');
         const token = getToken();
         if (!token) {
@@ -148,31 +147,36 @@ function PatientDashboard() {
         }
     };
 
-    // useEffect for initial data fetch and polling (API calls)
     useEffect(() => {
         fetchPatientData(); // Initial fetch
         const intervalId = setInterval(fetchPatientData, 15000); // Poll every 15 seconds
         return () => clearInterval(intervalId);
-    }, [selectedDoctorId]); // Re-run if selectedDoctorId changes (for initial select)
+    }, [selectedDoctorId]);
 
 
-    // --- NEW: Socket.IO Integration for Real-time Notifications ---
+    // --- Socket.IO Integration for Real-time Notifications ---
     useEffect(() => {
         const user = getUser(); // Get the current logged-in user's data
+        // Only connect Socket.IO if a user is logged in
         if (!user || !user.id) {
             console.log("No user ID found for Socket.IO connection. Not connecting Socket.");
-            return; // Don't connect socket if no user or user ID
+            return;
         }
 
         // Connect to Socket.IO server
         const socket = io(SOCKET_SERVER_URL, {
-            query: { userId: user.id }, // Send user ID with connection for server-side room management
-            transports: ['websocket', 'polling'] // Prefer WebSocket, fallback to polling
+            // Pass user ID with connection query for server-side room management
+            query: { userId: user.id },
+            // Force WebSocket first, fallback to polling
+            transports: ['websocket', 'polling'],
+            // Crucial for CORS and allowing credentials (like JWTs) if implemented
+            // origin: API_BASE_URL // This is handled by 'query' above for room
         });
 
         socket.on('connect', () => {
             console.log(`Socket connected for patient ${user.id}: ${socket.id}`);
-            // Server-side (doctorController) will use this userId to target messages
+            // NEW: Emit 'joinRoom' event to tell backend to add this socket to the user's private room
+            socket.emit('joinRoom', user.id);
         });
 
         socket.on('disconnect', () => {
@@ -195,7 +199,7 @@ function PatientDashboard() {
         return () => {
             socket.disconnect();
         };
-    }, []); // Empty dependency array means this runs once on mount/unmount
+    }, []); // Empty dependency array, runs once on mount/unmount
 
 
     // --- Handle Book Appointment ---
@@ -319,7 +323,6 @@ function PatientDashboard() {
         }
     };
 
-
     return (
         <div className="container">
             <h1>Patient Dashboard</h1>
@@ -330,7 +333,7 @@ function PatientDashboard() {
                     Error: {patientError}
                 </div>
             )}
-            {notification && ( // NEW: Display real-time notification
+            {notification && ( // Display real-time notification
                 <div className="message success" style={{ backgroundColor: '#fff3cd', color: '#856404', borderColor: '#ffeeba' }}> {/* Yellowish background for notifications */}
                     {notification}
                 </div>
