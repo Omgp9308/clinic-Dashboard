@@ -1,10 +1,10 @@
 // server/server.js
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require('cors');
+const cors = require('cors'); // Import the cors package
 const dotenv = require('dotenv');
-const http = require('http'); // NEW: Node.js built-in HTTP module
-const { Server } = require('socket.io'); // NEW: Import Server class from socket.io
+const http = require('http');
+const { Server } = require('socket.io');
 
 dotenv.config();
 
@@ -25,36 +25,52 @@ const { authenticateToken, authorizeRole } = require('./middleware/authMiddlewar
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// --- NEW: Create HTTP server and Socket.IO server ---
-const server = http.createServer(app); // Create an HTTP server from Express app
-const io = new Server(server, { // Initialize Socket.IO server
+// --- CRITICAL: Define allowed origins for CORS ---
+// In production, this should be ONLY your frontend's deployed URL
+const allowedOrigins = [
+    'http://localhost:3000', // For local frontend development
+    'https://my-clinic-dashboard-ui.onrender.com' // REPLACE THIS with your frontend Static Site's Public URL (e.g., https://my-frontend-app-xyz.onrender.com)
+];
+
+// --- Create HTTP server and Socket.IO server ---
+const server = http.createServer(app);
+
+// Configure Socket.IO server with specific CORS
+const io = new Server(server, {
     cors: {
-        origin: "http://localhost:3000", // Allow connection from your frontend URL
+        origin: allowedOrigins, // Allow connections only from defined origins
         methods: ["GET", "POST", "PUT", "DELETE"],
-        credentials: true
+        credentials: true // Crucial for sending cookies/auth headers with WebSocket
     }
 });
 
-// Make io instance accessible to controllers
-// This is a common pattern to pass the Socket.IO instance down
-// to route handlers/controllers that need to emit events.
+// Make io instance accessible to controllers (as before)
 app.set('socketio', io);
 
 
 // --- Middleware ---
-app.use(cors()); // Configure CORS for Express routes
-app.use(bodyParser.json());
+// Configure Express routes CORS
+app.use(cors({
+    origin: allowedOrigins, // Allow requests only from defined origins
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true // Allow sending cookies/auth headers with HTTP requests
+}));
+app.use(bodyParser.json()); // To parse JSON request bodies
+
 
 // --- Socket.IO Connection Handling ---
 io.on('connection', (socket) => {
-    console.log(`User connected: ${socket.id}`);
+    console.log(`User connected to Socket.IO: ${socket.id}`);
 
-    // Example: Listen for a custom event from client
-    socket.on('disconnect', () => {
-        console.log(`User disconnected: ${socket.id}`);
+    // Handle custom event from client to join a user-specific room
+    socket.on('joinRoom', (userId) => {
+        socket.join(userId); // Join a room named after the user's ID
+        console.log(`Socket ${socket.id} joined room ${userId}`);
     });
 
-    // You can add more socket listeners here if needed for bi-directional communication
+    socket.on('disconnect', () => {
+        console.log(`User disconnected from Socket.IO: ${socket.id}`);
+    });
 });
 
 
@@ -65,32 +81,29 @@ app.get('/', (req, res) => {
     res.send('Digital Clinic Backend API is running!');
 });
 
-// Database Connection Test Route - COMMENTED OUT
-/* ... (your commented out /test-db route) ... */
-
 // Authentication routes (publicly accessible for login/register)
 app.use('/api', authRoutes);
 
-// Admin routes (protected: requires authentication and 'admin' role)
+// Admin routes (protected)
 app.use('/api/admin', authenticateToken, authorizeRole(['admin']), adminRoutes);
 
-// Doctor routes (protected: requires authentication and 'doctor' role)
+// Doctor routes (protected)
 app.use('/api/doctor', authenticateToken, authorizeRole(['doctor']), doctorRoutes);
 
-// Staff routes (protected: requires authentication and 'staff' role)
+// Staff routes (protected)
 app.use('/api/staff', authenticateToken, authorizeRole(['staff']), staffRoutes);
 
-// Patient routes (protected: requires authentication and 'patient' role)
+// Patient routes (protected)
 app.use('/api/patient', authenticateToken, authorizeRole(['patient']), patientRoutes);
 
-// Publicly accessible routes (no authentication required for public list of doctors)
+// Publicly accessible routes
 app.use('/api/public', publicRoutes);
 
 
-// --- Error Handling Middleware (Will be added later) ---
+// --- Error Handling Middleware (Will be added later if needed) ---
+
 
 // --- Start the Server ---
-// UPDATED: Listen with the HTTP server, not just the Express app
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Access backend at: http://localhost:${PORT}`);
