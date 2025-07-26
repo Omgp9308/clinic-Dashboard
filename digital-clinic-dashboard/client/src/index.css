@@ -1,0 +1,286 @@
+/* client/src/index.css */
+
+/* Basic CSS Reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Body and Root App Styling */
+body {
+  font-family: 'Arial', sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #e6e6fa; /* Lavender blush */
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.App {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Common Container/Card Styles */
+.container {
+  padding: 40px; /* Increased padding for more internal space */
+  max-width: 900px;
+  margin: 25px auto; /* Slightly more vertical margin on PC */
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  border: 1px solid #e0e0e0;
+}
+
+/* Form Element Styling (General) */
+form {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Default to two columns */
+  gap: 25px; /* Increased gap for more spacing between form elements */
+}
+
+/* For form rows that span two columns (like Contact Info in Doctor/Patient forms) */
+.form-span-2 {
+  grid-column: span 2;
+}
+
+/* Input, Select, Textarea common styles */
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #555;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="datetime-local"],
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #c9d0d6;
+  border-radius: 5px;
+  font-size: 1em;
+  transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+input[type="number"]:focus,
+input[type="datetime-local"]:focus,
+select:focus,
+textarea:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+  outline: none;
+}
+
+/* Button Styling (General) */
+button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+  font-weight: bold;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+/* Primary Button (e.g., Login/Register submit) */
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+.btn-primary:hover {
+  background-color: #0056b3;
+}
+
+/* Success Button (e.g., Add Doctor, Schedule Appointment) */
+.btn-success {
+  background-color: #28a745;
+  color: white;
+}
+.btn-success:hover {
+  background-color: #218838;
+}
+
+/* Danger Button (e.g., Deny Service, Cancel Appointment) */
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+/* Secondary Button (for toggles, etc.) */
+.btn-secondary {
+  background: none;
+  border: 1px solid #007bff;
+  color: #007bff;
+}
+.btn-secondary:hover {
+  background-color: #e9f5ff;
+  border-color: #0056b3;
+  color: #0056b3;
+}
+
+/* Button used as an inline link (like login/register toggle in LoginPage) */
+.btn-inline-link {
+    background: none;
+    border: none;
+    color: #007bff;
+    cursor: pointer;
+    text-decoration: underline;
+    font-size: inherit; /* Inherit font size from parent p tag */
+    padding: 0; /* Remove default button padding */
+    margin: 0; /* Remove default button margin */
+    display: inline; /* Ensure it behaves like inline text */
+}
+.btn-inline-link:hover {
+    color: #0056b3;
+    text-decoration: none;
+    transform: none; /* No transform for subtle inline links */
+}
+
+/* IMPORTANT: Ensure only actual form submit buttons span 2 columns */
+form button[type="submit"] {
+    grid-column: span 2;
+}
+
+/* NEW: Add consistent margin for paragraphs and headings for better spacing */
+p {
+    margin-bottom: 15px;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin-bottom: 20px;
+}
+h1 { font-size: 2.2em; text-align: center; } /* REMOVED: color: #333; */
+h2 { font-size: 1.8em; } /* Adjust H2 size */
+
+/* Ensure specific heading styles (like section-heading) override these if needed */
+.section-heading {
+    color: #007bff;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 10px;
+    margin-bottom: 25px; /* More space below section headings */
+    text-align: left;
+}
+
+/* Message Styling (Consolidated) */
+.message {
+  margin-top: 20px;
+  padding: 12px;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.message.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Header/Nav Styles (from App.js) */
+.app-header {
+    padding: 15px 20px;
+    background: #2b3e50; /* Darker blue/gray */
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+.app-header h1 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+.app-header .user-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.app-header .user-info span {
+    font-size: 0.9em;
+    opacity: 0.8;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden; /* For rounded corners with border-collapse */
+}
+
+th, td {
+    padding: 12px 15px;
+    border: 1px solid #e9ecef;
+    text-align: left;
+}
+
+th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    color: #495057;
+    text-transform: uppercase;
+    font-size: 0.9em;
+}
+
+tbody tr:nth-child(even) {
+    background-color: #fbfbfb;
+}
+
+tbody tr:hover {
+    background-color: #eef7ff;
+}
+
+/* --- Media Queries for Responsiveness (Consolidated) --- */
+@media screen and (max-width: 768px) {
+  .container {
+    margin: 20px; /* Increased margin on mobile to prevent reaching edges */
+    padding: 25px; /* Adjusted internal padding for mobile view */
+  }
+
+  form {
+    grid-template-columns: 1fr; /* On smaller screens, forms become single column */
+    gap: 15px; /* Slightly reduced gap for mobile forms to save vertical space */
+  }
+
+  .form-span-2,
+  form button[type="submit"] {
+    grid-column: span 1; /* Make them single column on small screens */
+  }
+}
