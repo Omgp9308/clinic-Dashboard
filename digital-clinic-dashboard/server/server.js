@@ -1,7 +1,7 @@
 // server/server.js
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require('cors'); // Import the cors package
+const cors = require('cors');
 const dotenv = require('dotenv');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -25,36 +25,31 @@ const { authenticateToken, authorizeRole } = require('./middleware/authMiddlewar
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// --- CRITICAL: Define allowed origins for CORS ---
-// In production, this should be ONLY your frontend's deployed URL
-const allowedOrigins = [
-    'http://localhost:3000', // For local frontend development
-    'https://my-clinic-dashboard-ui.onrender.com' // REPLACE THIS with your frontend Static Site's Public URL (e.g., https://my-frontend-app-xyz.onrender.com)
-];
+// --- NEW: CORS Options for Express and Socket.IO ---
+// This allows any origin (*) to connect, and allows sending credentials (like JWT tokens).
+// This is temporary for debugging deployment. In production, 'origin' should be your specific frontend URL.
+const corsOptions = {
+    origin: "*", // Allow all origins for testing
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Allow all common HTTP methods
+    allowedHeaders: ['Content-Type', 'Authorization'], // Allow these headers to be sent cross-origin
+    credentials: true // Crucial: allow sending cookies, Authorization headers etc.
+};
 
 // --- Create HTTP server and Socket.IO server ---
 const server = http.createServer(app);
 
-// Configure Socket.IO server with specific CORS
+// Configure Socket.IO server with the same CORS options
 const io = new Server(server, {
-    cors: {
-        origin: allowedOrigins, // Allow connections only from defined origins
-        methods: ["GET", "POST", "PUT", "DELETE"],
-        credentials: true // Crucial for sending cookies/auth headers with WebSocket
-    }
+    cors: corsOptions // Apply the defined corsOptions
 });
 
-// Make io instance accessible to controllers (as before)
+// Make io instance accessible to controllers
 app.set('socketio', io);
 
 
 // --- Middleware ---
-// Configure Express routes CORS
-app.use(cors({
-    origin: allowedOrigins, // Allow requests only from defined origins
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true // Allow sending cookies/auth headers with HTTP requests
-}));
+// Apply CORS to Express routes
+app.use(cors(corsOptions)); // Apply the defined corsOptions
 app.use(bodyParser.json()); // To parse JSON request bodies
 
 
@@ -62,9 +57,8 @@ app.use(bodyParser.json()); // To parse JSON request bodies
 io.on('connection', (socket) => {
     console.log(`User connected to Socket.IO: ${socket.id}`);
 
-    // Handle custom event from client to join a user-specific room
     socket.on('joinRoom', (userId) => {
-        socket.join(userId); // Join a room named after the user's ID
+        socket.join(userId);
         console.log(`Socket ${socket.id} joined room ${userId}`);
     });
 
@@ -76,31 +70,19 @@ io.on('connection', (socket) => {
 
 // --- Routes ---
 
-// Basic test route
 app.get('/', (req, res) => {
     res.send('Digital Clinic Backend API is running!');
 });
 
-// Authentication routes (publicly accessible for login/register)
 app.use('/api', authRoutes);
-
-// Admin routes (protected)
 app.use('/api/admin', authenticateToken, authorizeRole(['admin']), adminRoutes);
-
-// Doctor routes (protected)
 app.use('/api/doctor', authenticateToken, authorizeRole(['doctor']), doctorRoutes);
-
-// Staff routes (protected)
 app.use('/api/staff', authenticateToken, authorizeRole(['staff']), staffRoutes);
-
-// Patient routes (protected)
 app.use('/api/patient', authenticateToken, authorizeRole(['patient']), patientRoutes);
-
-// Publicly accessible routes
 app.use('/api/public', publicRoutes);
 
 
-// --- Error Handling Middleware (Will be added later if needed) ---
+// --- Error Handling Middleware (Will be added later) ---
 
 
 // --- Start the Server ---
