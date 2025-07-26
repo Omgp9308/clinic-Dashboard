@@ -1,0 +1,36 @@
+# digital-clinic-dashboard/.gitignore
+
+# Node.js dependencies folders (CRITICAL: Ignores node_modules everywhere)
+**/node_modules/
+
+# Build output folders (CRITICAL: Ignores 'build' folders everywhere)
+**/build/
+**/dist/
+
+# Environment variable files (CRITICAL: DO NOT COMMIT THESE!)
+.env
+client/.env.development
+client/.env.production
+server/.env
+# Specific .env files that might be created by React/NPM tools
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs and temporary files
+*.log
+npm-debug.log*
+yarn-debug.log*
+.pnpm-debug.log*
+.eslintcache
+.prettiercache
+/coverage # Testing output
+
+# Operating System specific files
+.DS_Store # macOS
+Thumbs.db # Windows
+
+# IDE specific files (optional, can also commit if shared settings)
+.vscode/
+.idea/
