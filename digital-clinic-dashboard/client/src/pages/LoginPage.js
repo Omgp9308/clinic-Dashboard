@@ -52,7 +52,7 @@ function LoginPage({ onLoginSuccess }) {
                 setMessage(data.message || (isRegistering ? 'Registration successful!' : 'Login successful!'));
                 if (!isRegistering) {
                     localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.parse(JSON.stringify(data.user))); // Ensure deep copy for object state
+                    localStorage.setItem('user', JSON.stringify(data.user)); 
                     onLoginSuccess(data.user);
                 } else {
                     setEmail('');
