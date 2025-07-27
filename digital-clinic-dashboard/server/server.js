@@ -12,7 +12,7 @@ const pool = require('./config/db');
 
 // --- Import Routes ---
 const authRoutes = require('./routes/authRoutes');
-const adminRoutes = require('./routes/adminRoutes');
+const adminRoutes = require('./routes/adminRoutes'); // Corrected from './('./routes/adminRoutes') if it was there
 const doctorRoutes = require('./routes/doctorRoutes');
 const staffRoutes = require('./routes/staffRoutes');
 const patientRoutes = require('./routes/patientRoutes');
@@ -25,22 +25,20 @@ const { authenticateToken, authorizeRole } = require('./middleware/authMiddlewar
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// --- NEW: CORS Options for Express and Socket.IO ---
-// This allows any origin (*) to connect, and allows sending credentials (like JWT tokens).
-// This is temporary for debugging deployment. In production, 'origin' should be your specific frontend URL.
-const corsOptions = {
-    origin: "*", // Allow all origins for testing
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE", // Allow all common HTTP methods
-    allowedHeaders: ['Content-Type', 'Authorization'], // Allow these headers to be sent cross-origin
-    credentials: true // Crucial: allow sending cookies, Authorization headers etc.
-};
+// --- Define allowed origin for CORS using Environment Variable ---
+// Railway will provide process.env.FRONTEND_URL. Default to localhost for local dev.
+const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 // --- Create HTTP server and Socket.IO server ---
 const server = http.createServer(app);
 
-// Configure Socket.IO server with the same CORS options
+// Configure Socket.IO server with explicit CORS
 const io = new Server(server, {
-    cors: corsOptions // Apply the defined corsOptions
+    cors: {
+        origin: frontendUrl, // Allow connections ONLY from your Vercel frontend URL
+        methods: ["GET", "POST", "PUT", "DELETE"],
+        credentials: true // Crucial for allowing cookies/auth headers with WebSocket
+    }
 });
 
 // Make io instance accessible to controllers
@@ -48,22 +46,36 @@ app.set('socketio', io);
 
 
 // --- Middleware ---
-// Apply CORS to Express routes
-app.use(cors(corsOptions)); // Apply the defined corsOptions
-app.use(bodyParser.json()); // To parse JSON request bodies
+// Configure Express routes CORS
+app.use(cors({
+    origin: frontendUrl, // Allow requests ONLY from your Vercel frontend URL
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    allowedHeaders: ['Content-Type', 'Authorization'], // Allow these headers to be sent cross-origin
+    credentials: true // Allow sending cookies/auth headers with HTTP requests
+}));
+app.use(bodyParser.json());
 
 
 // --- Socket.IO Connection Handling ---
 io.on('connection', (socket) => {
-    console.log(`User connected to Socket.IO: ${socket.id}`);
-
-    socket.on('joinRoom', (userId) => {
-        socket.join(userId);
+    console.log(`Socket connected: ${socket.id}`);
+    // Handle custom event from client to join a user-specific room
+    const userId = socket.handshake.query.userId;
+    if (userId) {
+        socket.join(userId); // Join a room named after the user's ID
         console.log(`Socket ${socket.id} joined room ${userId}`);
-    });
+    }
 
     socket.on('disconnect', () => {
-        console.log(`User disconnected from Socket.IO: ${socket.id}`);
+        console.log(`Socket disconnected: ${socket.id}`);
+    });
+
+    // This event is emitted by PatientDashboard to explicitly join room
+    socket.on('joinRoom', (id) => {
+        if (id) {
+            socket.join(id);
+            console.log(`Socket ${socket.id} joined room ${id} via joinRoom event`);
+        }
     });
 });
 
@@ -89,7 +101,9 @@ app.use('/api/public', publicRoutes);
 server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
     console.log(`Access backend at: http://localhost:${PORT}`);
-    console.log(`Database URL (from .env): ${process.env.DATABASE_URL ? 'Loaded' : 'NOT LOADED - CHECK .env'}`);
-    console.log(`JWT Secret (from .env): ${process.env.JWT_SECRET ? 'Loaded' : 'NOT LOADED - CHECK .env'}`);
+    // Log environment variables to confirm they are loaded (for Railway logs)
+    console.log(`DB URL Loaded: ${process.env.DATABASE_URL ? 'Yes' : 'No'}`);
+    console.log(`JWT Secret Loaded: ${process.env.JWT_SECRET ? 'Yes' : 'No'}`);
+    console.log(`Frontend URL Allowed: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
     console.log('Socket.IO server listening for connections.');
 });
