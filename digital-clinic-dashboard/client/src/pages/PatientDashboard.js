@@ -1,39 +1,32 @@
 // client/src/pages/PatientDashboard.js
-import React, { useState, useEffect } => 'react';
+import React, { useState, useEffect } from 'react'; // CORRECTED: import syntax
 import io from 'socket.io-client';
 
-// UPDATED: Dynamically get API_BASE_URL from the browser's current domain
 const API_BASE_URL = window.location.origin;
-const SOCKET_SERVER_URL = API_BASE_URL; // Socket.IO server runs on the same URL as API
+const SOCKET_SERVER_URL = API_BASE_URL;
 
 function PatientDashboard() {
-    // Helper function to get default appointment time
     const getDefaultAppointmentTime = () => {
         const now = new Date();
-        let date = new Date(now.getTime() + 30 * 60 * 1000); // Start 30 minutes from now
+        let date = new Date(now.getTime() + 30 * 60 * 1000);
 
-        // Round up to the next 15-minute interval
         const minutes = date.getMinutes();
         const remainder = minutes % 15;
         if (remainder !== 0) {
             date.setMinutes(minutes + (15 - remainder));
         }
-        date.setSeconds(0); // Set seconds to 0
-        date.setMilliseconds(0); // Set milliseconds to 0
+        date.setSeconds(0);
+        date.setMilliseconds(0);
 
-        // If before 8 AM, set to 8 AM
         if (date.getHours() < 8) {
             date.setHours(8);
             date.setMinutes(0);
-        }
-        // If after 8 PM, set to next day's 8 AM
-        else if (date.getHours() >= 20) { // 20:00 is 8 PM
+        } else if (date.getHours() >= 20) {
             date.setDate(date.getDate() + 1);
             date.setHours(8);
             date.setMinutes(0);
         }
 
-        // Format to YYYY-MM-DDTHH:MM for datetime-local input
         const year = date.getFullYear();
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
         const day = date.getDate().toString().padStart(2, '0');
@@ -43,13 +36,11 @@ function PatientDashboard() {
         return `${year}-${month}-${day}T${hours}:${mins}`;
     };
 
-    // Helper function to calculate min/max dates for picker
     const getMinMaxDates = () => {
         const now = new Date();
-        const minDate = new Date(now.getTime() + 30 * 60 * 1000); // Minimum 30 mins from now
-        const maxDate = new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000); // Maximum 15 days from now
+        const minDate = new Date(now.getTime() + 30 * 60 * 1000);
+        const maxDate = new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000);
 
-        // Format to YYYY-MM-DDTHH:MM for datetime-local input's min/max attributes
         const formatForPicker = (date) => {
             const year = date.getFullYear();
             const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -68,28 +59,23 @@ function PatientDashboard() {
     const { min: minAppointmentDateTime, max: maxAppointmentDateTime } = getMinMaxDates();
 
 
-    // State for "My Turn"
     const [myTurnInfo, setMyTurnInfo] = useState(null);
-    // State for "Book Appointment" form
     const [doctors, setDoctors] = useState([]);
     const [selectedDoctorId, setSelectedDoctorId] = useState('');
     const [appointmentTime, setAppointmentTime] = useState(getDefaultAppointmentTime());
     const [bookAppointmentMessage, setBookAppointmentMessage] = useState('');
-    // State for "My Appointments" list
     const [myAppointments, setMyAppointments] = useState([]);
     const [patientError, setPatientError] = useState('');
-    // State for real-time notifications
     const [notification, setNotification] = useState(null);
 
     const getToken = () => localStorage.getItem('token');
-    const getUser = () => { // Helper to get user object from localStorage
+    const getUser = () => {
         const userString = localStorage.getItem('user');
         return userString ? JSON.parse(userString) : null;
     };
 
 
-    // --- Fetch Patient Data (My Turn, My Appointments, Doctors for Booking) ---
-    const fetchPatientData = async () => { // Moved function out to be callable
+    const fetchPatientData = async () => {
         setPatientError('');
         const token = getToken();
         if (!token) {
@@ -98,7 +84,6 @@ function PatientDashboard() {
         }
 
         try {
-            // Fetch My Turn Information
             const turnResponse = await fetch(`${API_BASE_URL}/api/patient/my-turn`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -113,7 +98,6 @@ function PatientDashboard() {
                 console.error('Failed to fetch turn info:', errorData);
             }
 
-            // Fetch My Appointments
             const appointmentsResponse = await fetch(`${API_BASE_URL}/api/patient/my-appointments`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -126,7 +110,6 @@ function PatientDashboard() {
                 console.error('Failed to fetch appointments:', errorData);
             }
 
-            // Fetch Doctors List for booking
             const doctorsResponse = await fetch(`${API_BASE_URL}/api/public/doctors`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -155,7 +138,6 @@ function PatientDashboard() {
     }, [selectedDoctorId]);
 
 
-    // Socket.IO Integration for Real-time Notifications
     useEffect(() => {
         const user = getUser();
         if (!user || !user.id) {
@@ -191,7 +173,6 @@ function PatientDashboard() {
     }, []);
 
 
-    // Handle Book Appointment
     const handleBookAppointment = async (e) => {
         e.preventDefault();
         setBookAppointmentMessage('');
@@ -207,7 +188,6 @@ function PatientDashboard() {
             return;
         }
 
-        // Client-Side Appointment Time Validation (Mirroring Backend)
         const now = new Date();
         const inputDate = new Date(appointmentTime);
 
@@ -271,7 +251,6 @@ function PatientDashboard() {
         }
     };
 
-    // Handle Cancel Appointment
     const handleCancelAppointment = async (appointmentId) => {
         setPatientError('');
         const token = getToken();
