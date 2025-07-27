@@ -1,37 +1,31 @@
 // client/src/pages/StaffDashboard.js
 import React, { useState, useEffect } from 'react';
 
-// UPDATED: Dynamically get API_BASE_URL from the browser's current domain
 const API_BASE_URL = window.location.origin;
 
 function StaffDashboard() {
     // Helper function to get default appointment time
     const getDefaultAppointmentTime = () => {
         const now = new Date();
-        let date = new Date(now.getTime() + 30 * 60 * 1000); // Start 30 minutes from now
+        let date = new Date(now.getTime() + 30 * 60 * 1000);
 
-        // Round up to the next 15-minute interval
         const minutes = date.getMinutes();
         const remainder = minutes % 15;
         if (remainder !== 0) {
             date.setMinutes(minutes + (15 - remainder));
         }
-        date.setSeconds(0); // Set seconds to 0
-        date.setMilliseconds(0); // Set milliseconds to 0
+        date.setSeconds(0);
+        date.setMilliseconds(0);
 
-        // If before 8 AM, set to 8 AM
         if (date.getHours() < 8) {
             date.setHours(8);
             date.setMinutes(0);
-        }
-        // If after 8 PM, set to next day's 8 AM
-        else if (date.getHours() >= 20) { // 20:00 is 8 PM
+        } else if (date.getHours() >= 20) {
             date.setDate(date.getDate() + 1);
             date.setHours(8);
             date.setMinutes(0);
         }
 
-        // Format to YYYY-MM-DDTHH:MM for datetime-local input
         const year = date.getFullYear();
         const month = (date.getMonth() + 1).toString().padStart(2, '0');
         const day = date.getDate().toString().padStart(2, '0');
@@ -44,10 +38,9 @@ function StaffDashboard() {
     // Helper function to calculate min/max dates for picker
     const getMinMaxDates = () => {
         const now = new Date();
-        const minDate = new Date(now.getTime() + 30 * 60 * 1000); // Minimum 30 mins from now
-        const maxDate = new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000); // Maximum 15 days from now
+        const minDate = new Date(now.getTime() + 30 * 60 * 1000);
+        const maxDate = new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000);
 
-        // Format to YYYY-MM-DDTHH:MM for datetime-local input's min/max attributes
         const formatForPicker = (date) => {
             const year = date.getFullYear();
             const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -72,7 +65,7 @@ function StaffDashboard() {
     const [patientGender, setPatientGender] = useState('');
     const [patientContactInfo, setPatientContactInfo] = useState('');
     const [patientDietaryRestrictions, setPatientDietaryRestrictions] = useState('');
-    const [patientAllergies, setPatientAllergies] = useState(''); // Corrected: useState declaration
+    const [patientAllergies, setPatientAllergies] = useState(''); // THIS LINE MUST BE CORRECT
     const [selectedDoctorId, setSelectedDoctorId] = useState('');
     const [appointmentTime, setAppointmentTime] = useState(getDefaultAppointmentTime());
     const [scheduleMessage, setScheduleMessage] = useState('');
@@ -94,7 +87,6 @@ function StaffDashboard() {
             }
 
             try {
-                // Fetch list of doctors (from public endpoint)
                 const doctorsResponse = await fetch(`${API_BASE_URL}/api/public/doctors`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -110,7 +102,6 @@ function StaffDashboard() {
                     console.error('Failed to fetch doctors:', errorData);
                 }
 
-                // Fetch next 3 in queue
                 const queueResponse = await fetch(`${API_BASE_URL}/api/staff/queue/next3`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -153,7 +144,6 @@ function StaffDashboard() {
             return;
         }
 
-        // Client-Side Appointment Time Validation (Mirroring Backend)
         const now = new Date();
         const inputDate = new Date(appointmentTime);
 
@@ -166,28 +156,24 @@ function StaffDashboard() {
             return;
         }
 
-        // 1. Check if appointment is in the past or too soon (less than 30 mins from now)
         const minFutureTime = new Date(now.getTime() + 30 * 60 * 1000);
         if (inputDate < minFutureTime) {
             setScheduleMessage('Appointment must be at least 30 minutes from now.');
             return;
         }
 
-        // 2. Check if appointment is outside 8 AM to 8 PM range
         const hours = inputDate.getHours();
         if (hours < 8 || hours >= 20) {
             setScheduleMessage('Appointments can only be scheduled between 8 AM and 8 PM.');
             return;
         }
 
-        // 3. Check for 15-minute slots (minutes must be 00, 15, 30, or 45)
         const minutes = inputDate.getMinutes();
         if (minutes % 15 !== 0) {
             setScheduleMessage('Appointment time must be in 15-minute intervals (e.g., XX:00, XX:15, XX:30, XX:45).');
             return;
         }
 
-        // 4. Check if appointment is within the next 15 days
         const maxFutureTime = new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000);
         if (inputDate > maxFutureTime) {
             setScheduleMessage('Appointment cannot be more than 15 days in the future.');

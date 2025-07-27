@@ -1,9 +1,10 @@
 // client/src/pages/PatientDashboard.js
-import React, { useState, useEffect } from 'react'; // CORRECTED: import syntax
+import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
+// UPDATED: Dynamically get API_BASE_URL from the browser's current domain
 const API_BASE_URL = window.location.origin;
-const SOCKET_SERVER_URL = API_BASE_URL;
+const SOCKET_SERVER_URL = API_BASE_URL; // Socket.IO server runs on the same URL as API
 
 function PatientDashboard() {
     const getDefaultAppointmentTime = () => {
