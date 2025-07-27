@@ -8,9 +8,9 @@ const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     // Optional: SSL configuration for production.
     // If your hosted PostgreSQL requires SSL (like Render's Free Tier Postgres):
-    // ssl: {
-    //     rejectUnauthorized: false // This bypasses strict certificate checks, common for self-signed or certain cloud providers
-    // }
+    ssl: {
+        rejectUnauthorized: false // This bypasses strict certificate checks, common for self-signed or certain cloud providers
+    }
 });
 
 // Test the database connection when the pool is created
