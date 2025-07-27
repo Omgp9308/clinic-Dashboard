@@ -1,20 +1,20 @@
 // client/src/pages/DoctorDashboard.js
 import React, { useState, useEffect } from 'react';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+// UPDATED: Dynamically get API_BASE_URL from the browser's current domain
+const API_BASE_URL = window.location.origin;
 
 function DoctorDashboard() {
     const [doctorQueue, setDoctorQueue] = useState([]);
     const [currentPatient, setCurrentPatient] = useState(null);
-    const [denialReason, setDenialReason] = useState(''); // State for denying service
-    const [denyMessage, setDenyMessage] = useState(''); // Message for denying service
-    const [callNextMessage, setCallNextMessage] = useState(''); // NEW: Message for call next patient
-    const [doctorError, setDoctorError] = useState(''); // General error message
+    const [denialReason, setDenialReason] = useState('');
+    const [denyMessage, setDenyMessage] = useState('');
+    const [callNextMessage, setCallNextMessage] = useState('');
+    const [doctorError, setDoctorError] = useState('');
 
     const getToken = () => localStorage.getItem('token');
 
-    // --- Fetch Doctor Data (Queue, Current Patient) ---
-    const fetchDoctorData = async () => { // UPDATED: Moved function out to be callable
+    const fetchDoctorData = async () => {
         setDoctorError('');
         const token = getToken();
         if (!token) {
@@ -44,7 +44,7 @@ function DoctorDashboard() {
                 const data = await currentPatientResponse.json();
                 setCurrentPatient(data);
             } else if (currentPatientResponse.status === 404) {
-                setCurrentPatient(null); // No patient currently consulting
+                setCurrentPatient(null);
             } else {
                 const errorData = await currentPatientResponse.json();
                 setDoctorError(errorData.message || 'Failed to fetch current patient details.');
@@ -58,14 +58,12 @@ function DoctorDashboard() {
     };
 
     useEffect(() => {
-        fetchDoctorData(); // Initial fetch
-        // Polling: Refetch data every 15 seconds for real-time queue updates
+        fetchDoctorData();
         const intervalId = setInterval(fetchDoctorData, 15000);
-        return () => clearInterval(intervalId); // Cleanup interval on component unmount
+        return () => clearInterval(intervalId);
     }, []);
 
 
-    // --- Handle Deny Service ---
     const handleDenyService = async (appointmentId) => {
         if (!denialReason) {
             setDenyMessage('Please provide a reason for denial.');
@@ -95,8 +93,8 @@ function DoctorDashboard() {
 
             if (response.ok) {
                 setDenyMessage(data.message || 'Service denied successfully!');
-                setDenialReason(''); // Clear reason
-                fetchDoctorData(); // Re-fetch all data to update UI
+                setDenialReason('');
+                fetchDoctorData();
             } else {
                 setDenyMessage(data.message || 'Failed to deny service.');
             }
@@ -106,7 +104,6 @@ function DoctorDashboard() {
         }
     };
 
-    // NEW FUNCTION: Handle Call Next Patient
     const handleCallNextPatient = async () => {
         setCallNextMessage('');
         setDoctorError('');
@@ -129,7 +126,7 @@ function DoctorDashboard() {
 
             if (response.ok) {
                 setCallNextMessage(data.message || 'Operation successful!');
-                fetchDoctorData(); // Re-fetch all data to update UI
+                fetchDoctorData();
             } else {
                 setCallNextMessage(data.message || 'Failed to call next patient.');
             }
@@ -138,7 +135,6 @@ function DoctorDashboard() {
             setCallNextMessage('Network error. Could not call next patient.');
         }
     };
-
 
     return (
         <div className="container">
@@ -150,8 +146,8 @@ function DoctorDashboard() {
                     Error: {doctorError}
                 </div>
             )}
-            {callNextMessage && ( // NEW: Display message for Call Next Patient
-                <div className={`message ${callNextMessage.includes('successfully') || callNextMessage.includes('completed') ? 'success' : 'error'}`}>
+            {callNextMessage && (
+                <div className={`message ${callNextMessage.includes('successfully') || callNextMessage.includes('completed') || callNextMessage.includes('called') ? 'success' : 'error'}`}>
                     {callNextMessage}
                 </div>
             )}
@@ -168,8 +164,8 @@ function DoctorDashboard() {
                         <p className="form-span-2"><strong>Dietary Restrictions:</strong> {currentPatient.dietary_restrictions || 'None'}</p>
                         <p className="form-span-2"><strong>Allergies:</strong> {currentPatient.allergies || 'None'}</p>
                         <p><strong>Queue Number:</strong> {currentPatient.queue_number}</p>
-                        <div className="form-span-2" style={{ marginTop: '20px', textAlign: 'center' }}> {/* Container for button */}
-                            <button onClick={handleCallNextPatient} className="btn-primary"> {/* NEW BUTTON */}
+                        <div className="form-span-2" style={{ marginTop: '20px', textAlign: 'center' }}>
+                            <button onClick={handleCallNextPatient} className="btn-primary">
                                 Complete Appointment & Call Next Patient
                             </button>
                         </div>
@@ -177,7 +173,7 @@ function DoctorDashboard() {
                 ) : (
                     <div style={{ textAlign: 'center' }}>
                         <p style={{ color: '#777', padding: '20px 0' }}>No patient currently in consultation.</p>
-                        {doctorQueue.length > 0 && ( // Show "Call Next" button if there's a waiting queue
+                        {doctorQueue.length > 0 && (
                             <button onClick={handleCallNextPatient} className="btn-primary">
                                 Call First Patient to Consultation
                             </button>

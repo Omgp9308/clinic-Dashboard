@@ -1,10 +1,11 @@
 // client/src/pages/StaffDashboard.js
 import React, { useState, useEffect } from 'react';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+// UPDATED: Dynamically get API_BASE_URL from the browser's current domain
+const API_BASE_URL = window.location.origin;
 
 function StaffDashboard() {
-    // --- Helper function to get default appointment time ---
+    // Helper function to get default appointment time
     const getDefaultAppointmentTime = () => {
         const now = new Date();
         let date = new Date(now.getTime() + 30 * 60 * 1000); // Start 30 minutes from now
@@ -40,7 +41,7 @@ function StaffDashboard() {
         return `${year}-${month}-${day}T${hours}:${mins}`;
     };
 
-    // --- Helper function to calculate min/max dates for picker ---
+    // Helper function to calculate min/max dates for picker
     const getMinMaxDates = () => {
         const now = new Date();
         const minDate = new Date(now.getTime() + 30 * 60 * 1000); // Minimum 30 mins from now
@@ -73,7 +74,7 @@ function StaffDashboard() {
     const [patientDietaryRestrictions, setPatientDietaryRestrictions] = useState('');
     const [patientAllergies, setPatientAllergies] = useState('');
     const [selectedDoctorId, setSelectedDoctorId] = useState('');
-    const [appointmentTime, setAppointmentTime] = useState(getDefaultAppointmentTime()); // Initialize with default valid time
+    const [appointmentTime, setAppointmentTime] = useState(getDefaultAppointmentTime());
     const [scheduleMessage, setScheduleMessage] = useState('');
 
     // State for fetched data
@@ -133,7 +134,6 @@ function StaffDashboard() {
         return () => clearInterval(intervalId);
     }, [selectedDoctorId]);
 
-    // Handle Schedule Appointment Form Submission
     const handleScheduleAppointment = async (e) => {
         e.preventDefault();
         setScheduleMessage('');
@@ -153,9 +153,9 @@ function StaffDashboard() {
             return;
         }
 
-        // --- Client-Side Appointment Time Validation ---
+        // Client-Side Appointment Time Validation (Mirroring Backend)
         const now = new Date();
-        const inputDate = new Date(appointmentTime); // Convert frontend string (YYYY-MM-DDTHH:MM) to Date object
+        const inputDate = new Date(appointmentTime);
 
         // Convert to a UTC ISO string for backend
         let formattedAppointmentTime = null;
@@ -194,8 +194,6 @@ function StaffDashboard() {
             setScheduleMessage('Appointment cannot be more than 15 days in the future.');
             return;
         }
-        // --- END NEW VALIDATION ---
-
 
         try {
             const response = await fetch(`${API_BASE_URL}/api/staff/appointments`, {
@@ -220,14 +218,13 @@ function StaffDashboard() {
 
             if (response.ok) {
                 setScheduleMessage(data.message || 'Appointment scheduled successfully!');
-                // Clear form fields after successful submission
                 setPatientName('');
                 setPatientAge('');
                 setPatientGender('');
                 setPatientContactInfo('');
                 setPatientDietaryRestrictions('');
                 setPatientAllergies('');
-                setAppointmentTime(getDefaultAppointmentTime()); // Reset to default valid time
+                setAppointmentTime(getDefaultAppointmentTime());
             } else {
                 setScheduleMessage(data.message || 'Failed to schedule appointment.');
             }
@@ -282,7 +279,7 @@ function StaffDashboard() {
                     </div>
                     <div className="form-span-2">
                         <label htmlFor="patientAllergies">Allergies:</label>
-                        <input type="text" id="patientAllergies" value={patientAllergies} onChange={(e) => setPatientAllergies(e.target.value)} />
+                        <input type="text" id="patientAllergies" value={patientAllergies} onChange={(e) => setAllergies(e.target.value)} />
                     </div>
 
                     {/* Appointment Details */}
@@ -306,8 +303,8 @@ function StaffDashboard() {
                             value={appointmentTime}
                             onChange={(e) => setAppointmentTime(e.target.value)}
                             required
-                            min={minAppointmentDateTime} // Set min date/time for picker
-                            max={maxAppointmentDateTime} // Set max date/time for picker
+                            min={minAppointmentDateTime}
+                            max={maxAppointmentDateTime}
                         />
                     </div>
 

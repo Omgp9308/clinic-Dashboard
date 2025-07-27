@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import io from 'socket.io-client';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+// UPDATED: Dynamically get API_BASE_URL from the browser's current domain
+const API_BASE_URL = window.location.origin;
 const SOCKET_SERVER_URL = API_BASE_URL; // Socket.IO server runs on the same URL as API
 
 function PatientDashboard() {
@@ -148,34 +149,27 @@ function PatientDashboard() {
     };
 
     useEffect(() => {
-        fetchPatientData(); // Initial fetch
-        const intervalId = setInterval(fetchPatientData, 15000); // Poll every 15 seconds
+        fetchPatientData();
+        const intervalId = setInterval(fetchPatientData, 15000);
         return () => clearInterval(intervalId);
     }, [selectedDoctorId]);
 
 
     // --- Socket.IO Integration for Real-time Notifications ---
     useEffect(() => {
-        const user = getUser(); // Get the current logged-in user's data
-        // Only connect Socket.IO if a user is logged in
+        const user = getUser();
         if (!user || !user.id) {
             console.log("No user ID found for Socket.IO connection. Not connecting Socket.");
             return;
         }
 
-        // Connect to Socket.IO server
         const socket = io(SOCKET_SERVER_URL, {
-            // Pass user ID with connection query for server-side room management
             query: { userId: user.id },
-            // Force WebSocket first, fallback to polling
             transports: ['websocket', 'polling'],
-            // Crucial for CORS and allowing credentials (like JWTs) if implemented
-            // origin: API_BASE_URL // This is handled by 'query' above for room
         });
 
         socket.on('connect', () => {
             console.log(`Socket connected for patient ${user.id}: ${socket.id}`);
-            // NEW: Emit 'joinRoom' event to tell backend to add this socket to the user's private room
             socket.emit('joinRoom', user.id);
         });
 
@@ -183,23 +177,18 @@ function PatientDashboard() {
             console.log(`Socket disconnected for patient ${user.id}`);
         });
 
-        // Listen for custom 'appointment_status_update' event from backend
         socket.on('appointment_status_update', (data) => {
             console.log('Received real-time notification:', data);
-            // Set the notification message to display
             setNotification(data.message);
-            // Automatically clear notification after a few seconds
-            setTimeout(() => setNotification(null), 7000); // Display for 7 seconds
+            setTimeout(() => setNotification(null), 7000);
 
-            // Also trigger an immediate re-fetch of patient data to update queue status
             fetchPatientData();
         });
 
-        // Clean up socket connection on component unmount
         return () => {
             socket.disconnect();
         };
-    }, []); // Empty dependency array, runs once on mount/unmount
+    }, []);
 
 
     // --- Handle Book Appointment ---
@@ -222,7 +211,6 @@ function PatientDashboard() {
         const now = new Date();
         const inputDate = new Date(appointmentTime);
 
-        // Convert to a UTC ISO string for backend
         let formattedAppointmentTime = null;
         try {
             formattedAppointmentTime = inputDate.toISOString();
@@ -232,28 +220,24 @@ function PatientDashboard() {
             return;
         }
 
-        // 1. Check if appointment is in the past or too soon (less than 30 mins from now)
         const minFutureTime = new Date(now.getTime() + 30 * 60 * 1000);
         if (inputDate < minFutureTime) {
             setBookAppointmentMessage('Appointment must be at least 30 minutes from now.');
             return;
         }
 
-        // 2. Check if appointment is outside 8 AM to 8 PM range
         const hours = inputDate.getHours();
-        if (hours < 8 || hours >= 20) { // 20:00 is 8 PM, so valid up to 19:59 (7:59 PM)
+        if (hours < 8 || hours >= 20) {
             setBookAppointmentMessage('Appointments can only be scheduled between 8 AM and 8 PM.');
             return;
         }
 
-        // 3. Check for 15-minute slots (minutes must be 00, 15, 30, or 45)
         const minutes = inputDate.getMinutes();
         if (minutes % 15 !== 0) {
             setBookAppointmentMessage('Appointment time must be in 15-minute intervals (e.g., XX:00, XX:15, XX:30, XX:45).');
             return;
         }
 
-        // 4. Check if appointment is within the next 15 days
         const maxFutureTime = new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000);
         if (inputDate > maxFutureTime) {
             setBookAppointmentMessage('Appointment cannot be more than 15 days in the future.');
@@ -278,7 +262,6 @@ function PatientDashboard() {
             if (response.ok) {
                 setBookAppointmentMessage(data.message || 'Appointment booked successfully!');
                 setAppointmentTime(getDefaultAppointmentTime());
-                // No explicit re-fetch here, as useEffect polling and Socket.IO updates will handle this
             } else {
                 setBookAppointmentMessage(data.message || 'Failed to book appointment.');
             }
@@ -313,7 +296,6 @@ function PatientDashboard() {
 
             if (response.ok) {
                 setPatientError(data.message || 'Appointment cancelled successfully!');
-                // No explicit re-fetch here, as useEffect polling and Socket.IO updates will handle this
             } else {
                 setPatientError(data.message || 'Failed to cancel appointment.');
             }
@@ -322,6 +304,7 @@ function PatientDashboard() {
             setPatientError('Network error. Could not cancel appointment.');
         }
     };
+
 
     return (
         <div className="container">
@@ -333,8 +316,8 @@ function PatientDashboard() {
                     Error: {patientError}
                 </div>
             )}
-            {notification && ( // Display real-time notification
-                <div className="message success" style={{ backgroundColor: '#fff3cd', color: '#856404', borderColor: '#ffeeba' }}> {/* Yellowish background for notifications */}
+            {notification && (
+                <div className="message success" style={{ backgroundColor: '#fff3cd', color: '#856404', borderColor: '#ffeeba' }}>
                     {notification}
                 </div>
             )}
@@ -368,7 +351,7 @@ function PatientDashboard() {
                             onChange={(e) => setSelectedDoctorId(e.target.value)}
                             required
                         >
-                            <option value="">Select a Doctor</option>
+                            <option value="">Select</option>
                             {doctors.map(doctor => (
                                 <option key={doctor.id} value={doctor.id}>
                                     {doctor.name} ({doctor.specialization})

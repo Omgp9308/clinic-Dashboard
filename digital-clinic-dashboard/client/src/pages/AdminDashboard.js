@@ -1,7 +1,8 @@
 // client/src/pages/AdminDashboard.js
 import React, { useState, useEffect } from 'react';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+// UPDATED: Dynamically get API_BASE_URL from the browser's current domain
+const API_BASE_URL = window.location.origin;
 
 function AdminDashboard() {
     const [newDoctor, setNewDoctor] = useState({
@@ -18,10 +19,9 @@ function AdminDashboard() {
 
     const getToken = () => localStorage.getItem('token');
 
-    // Fetch Admin Data (Queue, Patient Count)
     useEffect(() => {
         const fetchAdminData = async () => {
-            setAdminError(''); // Clear previous errors
+            setAdminError('');
             const token = getToken();
             if (!token) {
                 setAdminError('Authentication token not found. Please log in again.');
@@ -62,16 +62,14 @@ function AdminDashboard() {
         };
 
         fetchAdminData();
-        // Polling: Refetch data every 15 seconds for real-time updates
         const intervalId = setInterval(fetchAdminData, 15000);
-        return () => clearInterval(intervalId); // Cleanup interval on component unmount
-    }, []); // Empty dependency array means this runs once on mount
+        return () => clearInterval(intervalId);
+    }, []);
 
-    // Handle Add Doctor Form Submission
     const handleAddDoctorSubmit = async (e) => {
         e.preventDefault();
-        setAddDoctorMessage(''); // Clear previous messages
-        setAdminError(''); // Clear general errors
+        setAddDoctorMessage('');
+        setAdminError('');
         const token = getToken();
 
         if (!token) {
@@ -104,8 +102,8 @@ function AdminDashboard() {
     };
 
     return (
-        <div className="container"> {/* Main container for the entire dashboard */}
-            <h1 style={{ textAlign: 'center', color: '#333', marginBottom: '20px' }}>Admin Dashboard</h1>
+        <div className="container">
+            <h1>Admin Dashboard</h1>
             <p style={{ textAlign: 'center', color: '#555', marginBottom: '30px' }}>Welcome, Admin! Manage your clinic's operations here.</p>
 
             {adminError && (
@@ -115,7 +113,7 @@ function AdminDashboard() {
             )}
 
             {/* Section: Add New Doctor */}
-            <div className="container" style={{ marginBottom: '40px' }}> {/* Keep this as a nested container/card */}
+            <div className="container" style={{ marginBottom: '40px' }}>
                 <h2 className="section-heading">Add New Doctor</h2>
                 <form onSubmit={handleAddDoctorSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
                     <div>
@@ -134,11 +132,11 @@ function AdminDashboard() {
                         <label htmlFor="doctorSpecialization">Specialization:</label>
                         <input type="text" id="doctorSpecialization" value={newDoctor.specialization} onChange={(e) => setNewDoctor({ ...newDoctor, specialization: e.target.value })} required />
                     </div>
-                    <div style={{ gridColumn: 'span 2' }}>
+                    <div className="form-span-2">
                         <label htmlFor="doctorContactInfo">Contact Info:</label>
                         <input type="text" id="doctorContactInfo" value={newDoctor.contactInfo} onChange={(e) => setNewDoctor({ ...newDoctor, contactInfo: e.target.value })} />
                     </div>
-                    <button type="submit" className="btn-success" style={{ gridColumn: 'span 2' }}>
+                    <button type="submit" className="btn-success">
                         Add Doctor
                     </button>
                 </form>
@@ -150,7 +148,7 @@ function AdminDashboard() {
             </div>
 
             {/* Section: Overall Queue Monitor & Registered Patients Count Combined */}
-            <div className="container"> {/* Keep this as a nested container/card */}
+            <div className="container">
                 <h2 className="section-heading" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span>Overall Queue Monitor</span>
                     <span style={{ fontSize: '0.8em', color: '#6c757d' }}>
@@ -161,31 +159,31 @@ function AdminDashboard() {
                     <p style={{ textAlign: 'center', color: '#777', padding: '20px 0' }}>No patients currently in the queue.</p>
                 ) : (
                     <div style={{ overflowX: 'auto' }}>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Queue No.</th>
-                                <th>Patient Name</th>
-                                <th>Doctor</th>
-                                <th>Specialization</th>
-                                <th>Status</th>
-                                <th>Entered At</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {queueData.map((entry) => (
-                                <tr key={entry.queue_entry_id}>
-                                    <td>{entry.queue_number}</td>
-                                    <td>{entry.patient_name}</td>
-                                    <td>{entry.doctor_name}</td>
-                                    <td>{entry.doctor_specialization}</td>
-                                    <td>{entry.status}</td>
-                                    <td>{new Date(entry.entered_at).toLocaleString()}</td>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Queue No.</th>
+                                    <th>Patient Name</th>
+                                    <th>Doctor</th>
+                                    <th>Specialization</th>
+                                    <th>Status</th>
+                                    <th>Entered At</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                            </thead>
+                            <tbody>
+                                {queueData.map((entry) => (
+                                    <tr key={entry.queue_entry_id}>
+                                        <td>{entry.queue_number}</td>
+                                        <td>{entry.patient_name}</td>
+                                        <td>{entry.doctor_name}</td>
+                                        <td>{entry.doctor_specialization}</td>
+                                        <td>{entry.status}</td>
+                                        <td>{new Date(entry.entered_at).toLocaleString()}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
             </div>
         </div>

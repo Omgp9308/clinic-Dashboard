@@ -1,7 +1,8 @@
 // client/src/pages/LoginPage.js
 import React, { useState } from 'react';
 
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
+// UPDATED: Dynamically get API_BASE_URL from the browser's current domain
+const API_BASE_URL = window.location.origin;
 
 function LoginPage({ onLoginSuccess }) {
     const [isRegistering, setIsRegistering] = useState(false);
@@ -10,7 +11,7 @@ function LoginPage({ onLoginSuccess }) {
     const [name, setName] = useState('');
     const [role, setRole] = useState('patient');
     const [specialization, setSpecialization] = useState('');
-    const [age, setAge] = useState('');
+    const [age, setAge, ] = useState('');
     const [gender, setGender] = useState('');
     const [contactInfo, setContactInfo] = useState('');
     const [dietaryRestrictions, setDietaryRestrictions] = useState('');
@@ -31,7 +32,7 @@ function LoginPage({ onLoginSuccess }) {
             if (role === 'doctor') {
                 body = { ...body, specialization, contactInfo };
             } else if (role === 'patient') {
-                body = { ...body, age: parseInt(age, 10), gender, contactInfo, dietaryRestrictions, allergies };
+                body = { ...body, age: patientAge ? parseInt(patientAge, 10) : null, gender, contactInfo, dietaryRestrictions, allergies };
             }
         } else {
             body = { email, password };
@@ -52,7 +53,7 @@ function LoginPage({ onLoginSuccess }) {
                 setMessage(data.message || (isRegistering ? 'Registration successful!' : 'Login successful!'));
                 if (!isRegistering) {
                     localStorage.setItem('token', data.token);
-                    localStorage.setItem('user', JSON.stringify(data.user)); 
+                    localStorage.setItem('user', JSON.stringify(data.user));
                     onLoginSuccess(data.user);
                 } else {
                     setEmail('');
@@ -78,8 +79,7 @@ function LoginPage({ onLoginSuccess }) {
     };
 
     return (
-        // Apply container class here
-        <div className="container" style={{ maxWidth: '500px' }}> {/* Keep maxWidth for this specific container */}
+        <div className="container" style={{ maxWidth: '500px' }}>
             <h2 style={{ textAlign: 'center', marginBottom: '20px', color: '#333' }}>
                 {isRegistering ? 'Register New Account' : 'Login'}
             </h2>
@@ -144,7 +144,7 @@ function LoginPage({ onLoginSuccess }) {
                                         required={role === 'doctor'}
                                     />
                                 </div>
-                                <div>
+                                <div className="form-span-2">
                                     <label htmlFor="contactInfoDoc">Contact Info:</label>
                                     <input
                                         type="text"
@@ -180,7 +180,7 @@ function LoginPage({ onLoginSuccess }) {
                                         <option value="Other">Other</option>
                                     </select>
                                 </div>
-                                <div>
+                                <div className="form-span-2">
                                     <label htmlFor="contactInfoPatient">Contact Info:</label>
                                     <input
                                         type="text"
@@ -189,7 +189,7 @@ function LoginPage({ onLoginSuccess }) {
                                         onChange={(e) => setContactInfo(e.target.value)}
                                     />
                                 </div>
-                                <div>
+                                <div className="form-span-2">
                                     <label htmlFor="dietaryRestrictions">Dietary Restrictions:</label>
                                     <input
                                         type="text"
@@ -198,7 +198,7 @@ function LoginPage({ onLoginSuccess }) {
                                         onChange={(e) => setDietaryRestrictions(e.target.value)}
                                     />
                                 </div>
-                                <div>
+                                <div className="form-span-2">
                                     <label htmlFor="allergies">Allergies:</label>
                                     <input
                                         type="text"
@@ -212,23 +212,23 @@ function LoginPage({ onLoginSuccess }) {
                     </>
                 )}
 
-                <button type="submit" className="btn-primary"> {/* Apply btn-primary class */}
+                <button type="submit" className="btn-primary">
                     {isRegistering ? 'Register' : 'Login'}
                 </button>
             </form>
 
-            <p style={{ textAlign: 'center', marginTop: '20px' }}> {/* Keep some minimal inline style for alignment */}
+            <p style={{ textAlign: 'center', marginTop: '20px' }}>
                 {isRegistering ? (
                     <>
                         Already have an account?{' '}
-                        <button onClick={() => setIsRegistering(false)} className="btn-secondary"> {/* Apply btn-secondary class */}
+                        <button onClick={() => setIsRegistering(false)} className="btn-inline-link">
                             Login
                         </button>
                     </>
                 ) : (
                     <>
                         Don't have an account?{' '}
-                        <button onClick={() => setIsRegistering(true)} className="btn-secondary"> {/* Apply btn-secondary class */}
+                        <button onClick={() => setIsRegistering(true)} className="btn-inline-link">
                             Register
                         </button>
                     </>
