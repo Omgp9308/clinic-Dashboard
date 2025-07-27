@@ -10,20 +10,26 @@ import PrivateRoute from './components/PrivateRoute';
 
 function App() {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(null); // State to hold logged-in user info
 
+  // On initial load, check for user data in localStorage (from previous login)
   useEffect(() => {
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
-        // Basic check if token is still likely valid (optional, backend will verify fully)
         const token = localStorage.getItem('token');
         if (parsedUser && token) {
-            // If token exists, assume user is logged in for UI purposes until API rejects
-            setUser(parsedUser);
+            // Check if the parsedUser object itself contains the required properties
+            // This prevents errors if localStorage has corrupted/incomplete data
+            if (parsedUser.id && parsedUser.email && parsedUser.role && parsedUser.name) { // UPDATED: Check for name
+                setUser(parsedUser);
+            } else {
+                console.error("Incomplete user data in localStorage. Clearing...");
+                localStorage.removeItem('user');
+                localStorage.removeItem('token');
+            }
         } else {
-            // Clear potentially stale data if no token
             localStorage.removeItem('user');
             localStorage.removeItem('token');
         }
@@ -37,6 +43,7 @@ function App() {
 
   const handleLoginSuccess = (loggedInUser) => {
     setUser(loggedInUser);
+    // Redirect based on role after successful login
     if (loggedInUser.role === 'admin') {
       navigate('/admin-dashboard');
     } else if (loggedInUser.role === 'doctor') {
@@ -46,7 +53,7 @@ function App() {
     } else if (loggedInUser.role === 'patient') {
       navigate('/patient-dashboard');
     } else {
-      navigate('/');
+      navigate('/'); // Fallback to login if role is unknown
     }
   };
 
@@ -54,18 +61,17 @@ function App() {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     setUser(null);
-    navigate('/');
+    navigate('/'); // Redirect to login page
   };
 
   return (
     <div className="App">
-      {/* Apply app-header class */}
       <nav className="app-header">
         <h1>Digital Clinic Dashboard</h1>
         {user && (
           <div className="user-info">
-            <span>Logged in as: {user.email} ({user.role})</span>
-            {/* Apply btn-danger class */}
+            {/* UPDATED DISPLAY: Show Name (email) */}
+            <span>Logged in as: {user.name} ({user.email}) - {user.role}</span> 
             <button onClick={handleLogout} className="btn-danger">
               Logout
             </button>

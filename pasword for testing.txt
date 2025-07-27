@@ -1,0 +1,45 @@
+Fake User Details:
+
+Admin:
+
+Email: admin@test.com
+
+Password: adminpass
+
+Name: Admin User
+
+Doctor:
+
+Email: doctor@test.com
+
+Password: doctorpass
+
+Name: Dr. Alice Smith
+
+Specialization: General Practitioner
+
+Staff:
+
+Email: staff@test.com
+
+Password: staffpass
+
+Name: Staff Member
+
+Patient:
+
+Email: patient@test.com
+
+Password: patientpass
+
+Name: Patient Zero
+
+Age: 30
+
+Gender: Male
+
+Contact Info: 123-456-7890
+
+Dietary Restrictions: Vegetarian
+
+Allergies: Pollen

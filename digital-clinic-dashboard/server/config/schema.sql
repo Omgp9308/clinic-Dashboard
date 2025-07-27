@@ -13,12 +13,13 @@ DROP TABLE IF EXISTS Users CASCADE;
 CREATE TABLE Users (
     id SERIAL PRIMARY KEY,
     email VARCHAR(255) UNIQUE NOT NULL,
-    password_hash VARCHAR(255), -- Will store bcrypt hashed passwords
-    role VARCHAR(50) NOT NULL DEFAULT 'patient', -- 'admin', 'doctor', 'staff', 'patient'
-    -- You can add fields like first_name, last_name, phone_number here if they are common to all users
+    password_hash VARCHAR(255),
+    role VARCHAR(50) NOT NULL DEFAULT 'patient',
+    name VARCHAR(255) NOT NULL, -- NEW LINE: Add name column to Users table
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
 
 -- 2. Doctors Table
 -- Stores specific details for doctor users
