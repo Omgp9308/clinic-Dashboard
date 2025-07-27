@@ -1,5 +1,5 @@
 // client/src/pages/PatientDashboard.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } => 'react';
 import io from 'socket.io-client';
 
 // UPDATED: Dynamically get API_BASE_URL from the browser's current domain
@@ -106,7 +106,7 @@ function PatientDashboard() {
                 const data = await turnResponse.json();
                 setMyTurnInfo(data);
             } else if (turnResponse.status === 404) {
-                setMyTurnInfo(null); // Not in queue
+                setMyTurnInfo(null);
             } else {
                 const errorData = await turnResponse.json();
                 setPatientError(errorData.message || 'Failed to fetch turn information.');
@@ -155,7 +155,7 @@ function PatientDashboard() {
     }, [selectedDoctorId]);
 
 
-    // --- Socket.IO Integration for Real-time Notifications ---
+    // Socket.IO Integration for Real-time Notifications
     useEffect(() => {
         const user = getUser();
         if (!user || !user.id) {
@@ -191,7 +191,7 @@ function PatientDashboard() {
     }, []);
 
 
-    // --- Handle Book Appointment ---
+    // Handle Book Appointment
     const handleBookAppointment = async (e) => {
         e.preventDefault();
         setBookAppointmentMessage('');

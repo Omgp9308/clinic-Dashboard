@@ -1,7 +1,6 @@
 // client/src/pages/AdminDashboard.js
 import React, { useState, useEffect } from 'react';
 
-// UPDATED: Dynamically get API_BASE_URL from the browser's current domain
 const API_BASE_URL = window.location.origin;
 
 function AdminDashboard() {

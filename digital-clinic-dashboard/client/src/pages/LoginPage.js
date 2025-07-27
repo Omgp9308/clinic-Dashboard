@@ -1,7 +1,6 @@
 // client/src/pages/LoginPage.js
 import React, { useState } from 'react';
 
-// UPDATED: Dynamically get API_BASE_URL from the browser's current domain
 const API_BASE_URL = window.location.origin;
 
 function LoginPage({ onLoginSuccess }) {
@@ -11,7 +10,7 @@ function LoginPage({ onLoginSuccess }) {
     const [name, setName] = useState('');
     const [role, setRole] = useState('patient');
     const [specialization, setSpecialization] = useState('');
-    const [age, setAge, ] = useState('');
+    const [age, setAge] = useState(''); // Corrected: variable is 'age'
     const [gender, setGender] = useState('');
     const [contactInfo, setContactInfo] = useState('');
     const [dietaryRestrictions, setDietaryRestrictions] = useState('');
@@ -32,7 +31,7 @@ function LoginPage({ onLoginSuccess }) {
             if (role === 'doctor') {
                 body = { ...body, specialization, contactInfo };
             } else if (role === 'patient') {
-                body = { ...body, age: patientAge ? parseInt(patientAge, 10) : null, gender, contactInfo, dietaryRestrictions, allergies };
+                body = { ...body, age: age ? parseInt(age, 10) : null, gender, contactInfo, dietaryRestrictions, allergies }; // Corrected: uses 'age'
             }
         } else {
             body = { email, password };

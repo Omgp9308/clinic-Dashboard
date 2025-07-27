@@ -72,7 +72,7 @@ function StaffDashboard() {
     const [patientGender, setPatientGender] = useState('');
     const [patientContactInfo, setPatientContactInfo] = useState('');
     const [patientDietaryRestrictions, setPatientDietaryRestrictions] = useState('');
-    const [patientAllergies, setPatientAllergies] = useState('');
+    const [patientAllergies, setPatientAllergies] = useState(''); // Corrected: useState declaration
     const [selectedDoctorId, setSelectedDoctorId] = useState('');
     const [appointmentTime, setAppointmentTime] = useState(getDefaultAppointmentTime());
     const [scheduleMessage, setScheduleMessage] = useState('');
@@ -157,7 +157,6 @@ function StaffDashboard() {
         const now = new Date();
         const inputDate = new Date(appointmentTime);
 
-        // Convert to a UTC ISO string for backend
         let formattedAppointmentTime = null;
         try {
             formattedAppointmentTime = inputDate.toISOString();
@@ -176,7 +175,7 @@ function StaffDashboard() {
 
         // 2. Check if appointment is outside 8 AM to 8 PM range
         const hours = inputDate.getHours();
-        if (hours < 8 || hours >= 20) { // 20:00 is 8 PM, so valid up to 19:59 (7:59 PM)
+        if (hours < 8 || hours >= 20) {
             setScheduleMessage('Appointments can only be scheduled between 8 AM and 8 PM.');
             return;
         }
@@ -287,7 +286,7 @@ function StaffDashboard() {
                     <div>
                         <label htmlFor="assignDoctor">Assign Doctor (Required):</label>
                         <select id="assignDoctor" value={selectedDoctorId} onChange={(e) => setSelectedDoctorId(e.target.value)} required>
-                            <option value="">Select a Doctor</option>
+                            <option value="">Select</option>
                             {doctors.map(doctor => (
                                 <option key={doctor.id} value={doctor.id}>
                                     {doctor.name} ({doctor.specialization})
