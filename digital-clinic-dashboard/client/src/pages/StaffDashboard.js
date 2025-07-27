@@ -65,7 +65,7 @@ function StaffDashboard() {
     const [patientGender, setPatientGender] = useState('');
     const [patientContactInfo, setPatientContactInfo] = useState('');
     const [patientDietaryRestrictions, setPatientDietaryRestrictions] = useState('');
-    const [patientAllergies, setPatientAllergies] = useState(''); // THIS LINE MUST BE CORRECT
+    const [patientAllergies, setPatientAllergies] = useState(''); // <-- THIS LINE MUST BE PRESENT AND CORRECT
     const [selectedDoctorId, setSelectedDoctorId] = useState('');
     const [appointmentTime, setAppointmentTime] = useState(getDefaultAppointmentTime());
     const [scheduleMessage, setScheduleMessage] = useState('');
