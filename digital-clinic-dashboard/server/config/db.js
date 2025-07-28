@@ -2,18 +2,18 @@
 const { Pool } = require('pg');
 const dotenv = require('dotenv');
 
-dotenv.config(); // Ensure environment variables are loaded here too
+dotenv.config();
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
-    // Optional: SSL configuration for production.
-    // If your hosted PostgreSQL requires SSL (like Render's Free Tier Postgres):
+    /* // THIS BLOCK MUST BE COMMENTED OUT FOR LOCAL DEVELOPMENT
     ssl: {
-        rejectUnauthorized: false // This bypasses strict certificate checks, common for self-signed or certain cloud providers
+        rejectUnauthorized: false
     }
+    */
 });
 
-// Test the database connection when the pool is created
+// Test the database connection
 pool.connect((err, client, release) => {
     if (err) {
         console.error('--- Database Connection Error ---');
@@ -23,7 +23,7 @@ pool.connect((err, client, release) => {
         return;
     }
     console.log('Successfully connected to PostgreSQL database!');
-    release(); // Release the client back to the pool immediately after testing
+    release();
 });
 
-module.exports = pool; // Export the pool so other files can use it for queries
+module.exports = pool;
