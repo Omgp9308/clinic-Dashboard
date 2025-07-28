@@ -1,7 +1,8 @@
 // client/src/pages/AdminDashboard.js
 import React, { useState, useEffect } from 'react';
 
-const API_BASE_URL = window.location.origin;
+// REVERTED: API_BASE_URL for local development
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
 function AdminDashboard() {
     const [newDoctor, setNewDoctor] = useState({
@@ -28,7 +29,6 @@ function AdminDashboard() {
             }
 
             try {
-                // Fetch Queue Data
                 const queueResponse = await fetch(`${API_BASE_URL}/api/admin/queue`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -41,7 +41,6 @@ function AdminDashboard() {
                     console.error('Failed to fetch queue:', errorData);
                 }
 
-                // Fetch Patient Count
                 const patientCountResponse = await fetch(`${API_BASE_URL}/api/admin/patients/count`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
