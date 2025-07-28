@@ -1,7 +1,8 @@
 // client/src/pages/LoginPage.js
 import React, { useState } from 'react';
 
-const API_BASE_URL = window.location.origin;
+// REVERTED: API_BASE_URL for local development (frontend runs on 3000, backend on 5000)
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000';
 
 function LoginPage({ onLoginSuccess }) {
     const [isRegistering, setIsRegistering] = useState(false);
@@ -10,7 +11,7 @@ function LoginPage({ onLoginSuccess }) {
     const [name, setName] = useState('');
     const [role, setRole] = useState('patient');
     const [specialization, setSpecialization] = useState('');
-    const [age, setAge] = useState(''); // Corrected: variable is 'age'
+    const [age, setAge] = useState('');
     const [gender, setGender] = useState('');
     const [contactInfo, setContactInfo] = useState('');
     const [dietaryRestrictions, setDietaryRestrictions] = useState('');
@@ -31,7 +32,7 @@ function LoginPage({ onLoginSuccess }) {
             if (role === 'doctor') {
                 body = { ...body, specialization, contactInfo };
             } else if (role === 'patient') {
-                body = { ...body, age: age ? parseInt(age, 10) : null, gender, contactInfo, dietaryRestrictions, allergies }; // Corrected: uses 'age'
+                body = { ...body, age: patientAge ? parseInt(patientAge, 10) : null, gender, contactInfo, dietaryRestrictions, allergies };
             }
         } else {
             body = { email, password };
@@ -124,6 +125,7 @@ function LoginPage({ onLoginSuccess }) {
                                 value={role}
                                 onChange={(e) => setRole(e.target.value)}
                             >
+                                <option value="">Select</option>
                                 <option value="patient">Patient</option>
                                 <option value="doctor">Doctor</option>
                                 <option value="staff">Staff</option>
